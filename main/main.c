@@ -46,6 +46,7 @@
 #include "smoketest.h"
 #include "storage.h"
 #include "wallet.h"
+#include "spaceship.h"
 
 // Running partition/fw info & chip info, fetched once at boot
 esp_app_desc_t running_app_info;
@@ -263,6 +264,27 @@ static void start_dashboard(void)
 
 void app_main(void)
 {
+    // Check if any button is pressed at boot on TTGO T-Display
+    // Button A = GPIO 0, Button B = GPIO 35
+    gpio_config_t btn_cfg = { 0 };
+    btn_cfg.intr_type = GPIO_INTR_DISABLE;
+    btn_cfg.mode = GPIO_MODE_INPUT;
+    btn_cfg.pull_up_en = 1;
+    btn_cfg.pull_down_en = 0;
+    
+    // Configure both buttons
+    btn_cfg.pin_bit_mask = (1ULL << 0) | (1ULL << 35);  // GPIO 0 and GPIO 35
+    gpio_config(&btn_cfg);
+    
+    // Check if any button is pressed (active low)
+    int btn_a = gpio_get_level(0);   // Button A
+    int btn_b = gpio_get_level(35);  // Button B
+    
+    if (btn_a == 1 && btn_b == 1) {  // No buttons pressed
+        spaceship_run();
+        return;
+    }
+
     ensure_boot_flags();
     random_start_collecting();
     validate_running_image();
