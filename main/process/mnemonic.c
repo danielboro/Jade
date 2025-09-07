@@ -398,7 +398,7 @@ cleanup:
 static bool mnemonic_new(const size_t nwords, char* mnemonic, const size_t mnemonic_len)
 {
     // Support 12-word and 24-word mnemonics only
-    JADE_ASSERT(nwords == 12 || nwords == 24);
+    JADE_ASSERT(nwords == 12 || nwords == 18 || nwords == 24);
     JADE_ASSERT(mnemonic);
     JADE_ASSERT(mnemonic_len == MNEMONIC_BUFLEN);
 
@@ -577,7 +577,7 @@ static size_t valid_final_words(const char** mnemonic_words, const size_t num_mn
     size_t* possible_word_list, const size_t possible_word_list_len)
 {
     JADE_ASSERT(mnemonic_words);
-    JADE_ASSERT(num_mnemonic_words == 11 || num_mnemonic_words == 23);
+    JADE_ASSERT(num_mnemonic_words == 11 || num_mnemonic_words == 17 || num_mnemonic_words == 23);
     JADE_ASSERT(possible_word_list);
     JADE_ASSERT(possible_word_list_len);
 
@@ -623,7 +623,7 @@ static size_t get_wordlist_words(
 
     // Only 12 and 24 word mnemonics are supported
     const bool is_mnemonic = (purpose == MNEMONIC_SIMPLE) || (purpose == MNEMONIC_ADVANCED);
-    JADE_ASSERT(nwords == 12 || nwords == 24 || !is_mnemonic);
+    JADE_ASSERT(nwords == 12 || nwords == 18 || nwords == 24 || !is_mnemonic);
 
     gui_view_node_t* btns[26] = {};
     const size_t btns_len = sizeof(btns) / sizeof(btns[0]);
@@ -887,7 +887,7 @@ static size_t get_wordlist_words(
 static bool mnemonic_recover(const size_t nwords, const bool advanced_mode, char* mnemonic, const size_t mnemonic_len)
 {
     // Support 12-word and 24-word mnemonics only
-    JADE_ASSERT(nwords == 12 || nwords == 24);
+    JADE_ASSERT(nwords == 12 || nwords == 18 || nwords == 24);
     JADE_ASSERT(mnemonic);
     JADE_ASSERT(mnemonic_len == MNEMONIC_BUFLEN);
 
@@ -1016,7 +1016,7 @@ static bool import_seedqr(
     JADE_ASSERT(bytes[bytes_len] == '\0');
 
     // Must be a string of appropriate length and all digits
-    if ((bytes_len != 48 && bytes_len != 96) || !string_all((const char*)bytes, isdigit)) {
+    if ((bytes_len != 48 && bytes_len != 72 && bytes_len != 96) || !string_all((const char*)bytes, isdigit)) {
         return false;
     }
 
@@ -1026,7 +1026,7 @@ static bool import_seedqr(
     index_code[4] = '\0';
 
     size_t write_pos = 0;
-    const size_t num_words = bytes_len == 48 ? 12 : 24;
+    const size_t num_words = bytes_len/4;
     for (size_t i = 0; i < num_words; ++i) {
         memcpy(index_code, bytes + (i * 4), 4);
         const size_t index = strtol(index_code, NULL, 10);
@@ -1073,7 +1073,7 @@ static bool import_compactseedqr(
     JADE_INIT_OUT_SIZE(written);
 
     // Any buffer of appropriate length will work as a compactseedqr as it's just raw entropy
-    if ((bytes_len != BIP32_ENTROPY_LEN_128 && bytes_len != BIP32_ENTROPY_LEN_256)) {
+    if ((bytes_len != BIP32_ENTROPY_LEN_128 && bytes_len != BIP32_ENTROPY_LEN_192 && bytes_len != BIP32_ENTROPY_LEN_256)) {
         return false;
     }
 
@@ -1369,12 +1369,20 @@ void initialise_with_mnemonic(const bool temporary_restore, const bool force_qr_
                 got_mnemonic = mnemonic_new(12, mnemonic, sizeof(mnemonic));
                 break;
 
+            case BTN_NEW_MNEMONIC_18:
+                got_mnemonic = mnemonic_new(18, mnemonic, sizeof(mnemonic));
+                break;
+
             case BTN_NEW_MNEMONIC_24:
                 got_mnemonic = mnemonic_new(24, mnemonic, sizeof(mnemonic));
                 break;
 
             case BTN_RESTORE_MNEMONIC_12:
                 got_mnemonic = mnemonic_recover(12, advanced_mode, mnemonic, sizeof(mnemonic));
+                break;
+
+            case BTN_RESTORE_MNEMONIC_18:
+                got_mnemonic = mnemonic_recover(18, advanced_mode, mnemonic, sizeof(mnemonic));
                 break;
 
             case BTN_RESTORE_MNEMONIC_24:
@@ -1470,7 +1478,7 @@ cleanup:
 // NOTE: only the English wordlist is supported.
 void get_bip85_mnemonic(const uint32_t nwords, const uint32_t index, char** new_mnemonic)
 {
-    JADE_ASSERT(nwords == 12 || nwords == 24);
+    JADE_ASSERT(nwords == 12 || nwords == 18 || nwords == 24);
     JADE_ASSERT(index < BIP85_INDEX_MAX);
     JADE_INIT_OUT_PPTR(new_mnemonic);
     JADE_ASSERT(keychain_get());
@@ -1479,7 +1487,9 @@ void get_bip85_mnemonic(const uint32_t nwords, const uint32_t index, char** new_
     uint8_t entropy[HMAC_SHA512_LEN];
     SENSITIVE_PUSH(entropy, sizeof(entropy));
     wallet_get_bip85_bip39_entropy(nwords, index, entropy, sizeof(entropy), &entropy_len);
-    JADE_ASSERT(entropy_len == (nwords == 12 ? BIP39_ENTROPY_LEN_128 : BIP39_ENTROPY_LEN_256));
+    if (nwords == 12) {JADE_ASSERT(entropy_len == BIP39_ENTROPY_LEN_128);}
+    else if (nwords == 18) {JADE_ASSERT(entropy_len == BIP39_ENTROPY_LEN_192);}
+    else if (nwords == 24) {JADE_ASSERT(entropy_len == BIP39_ENTROPY_LEN_256);}
 
     JADE_WALLY_VERIFY(bip39_mnemonic_from_bytes(NULL, entropy, entropy_len, new_mnemonic));
     JADE_ASSERT(new_mnemonic);

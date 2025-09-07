@@ -49,8 +49,11 @@ gui_activity_t* make_new_mnemonic_activity(void)
     btn_data_t hdrbtns[] = { { .txt = "=", .font = JADE_SYMBOLS_16x16_FONT, .ev_id = BTN_MNEMONIC_METHOD },
         { .txt = NULL, .font = GUI_DEFAULT_FONT, .ev_id = GUI_BUTTON_EVENT_NONE } };
 
-    btn_data_t menubtns[] = { { .txt = "12 Words", .font = GUI_DEFAULT_FONT, .ev_id = BTN_NEW_MNEMONIC_12 },
-        { .txt = "24 Words", .font = GUI_DEFAULT_FONT, .ev_id = BTN_NEW_MNEMONIC_24 } };
+    btn_data_t menubtns[] = {
+			{ .txt = "12 Words", .font = GUI_DEFAULT_FONT, .ev_id = BTN_NEW_MNEMONIC_12 },
+//			{ .txt = "18 Words", .font = GUI_DEFAULT_FONT, .ev_id = BTN_NEW_MNEMONIC_18 },
+			{ .txt = "24 Words", .font = GUI_DEFAULT_FONT, .ev_id = BTN_NEW_MNEMONIC_24 } 
+		};
 
     gui_activity_t* const act = make_menu_activity("Recovery Phrase", hdrbtns, 2, menubtns, 2);
 
@@ -68,15 +71,17 @@ gui_activity_t* make_restore_mnemonic_activity(const bool temporary_restore)
                                  .ev_id = temporary_restore ? BTN_MNEMONIC_EXIT : BTN_MNEMONIC_METHOD },
         { .txt = NULL, .font = GUI_DEFAULT_FONT, .ev_id = GUI_BUTTON_EVENT_NONE } };
 
-    btn_data_t menubtns[] = { { .txt = "12 Words", .font = GUI_DEFAULT_FONT, .ev_id = BTN_RESTORE_MNEMONIC_12 },
+    btn_data_t menubtns[] = { 
+		{ .txt = "12 Words", .font = GUI_DEFAULT_FONT, .ev_id = BTN_RESTORE_MNEMONIC_12 },
+		{ .txt = "18 Words", .font = GUI_DEFAULT_FONT, .ev_id = BTN_RESTORE_MNEMONIC_18 },
         { .txt = "24 Words", .font = GUI_DEFAULT_FONT, .ev_id = BTN_RESTORE_MNEMONIC_24 },
         { .txt = "Scan QR", .font = GUI_DEFAULT_FONT, .ev_id = BTN_RESTORE_MNEMONIC_QR } };
 
 #ifdef CONFIG_HAS_CAMERA
-    const size_t nbtns = 3;
+    const size_t nbtns = 4;
     const size_t selected = temporary_restore ? 2 : 0;
 #else
-    const size_t nbtns = 2;
+    const size_t nbtns = 3;
     const size_t selected = 0;
 #endif
 
@@ -93,7 +98,9 @@ gui_activity_t* make_bip85_mnemonic_words_activity(void)
     btn_data_t hdrbtns[] = { { .txt = "=", .font = JADE_SYMBOLS_16x16_FONT, .ev_id = BTN_BIP85_EXIT },
         { .txt = NULL, .font = GUI_DEFAULT_FONT, .ev_id = GUI_BUTTON_EVENT_NONE } };
 
-    btn_data_t menubtns[] = { { .txt = "12 Words", .font = GUI_DEFAULT_FONT, .ev_id = BTN_BIP85_12_WORDS },
+    btn_data_t menubtns[] = { 
+		{ .txt = "12 Words", .font = GUI_DEFAULT_FONT, .ev_id = BTN_BIP85_12_WORDS },
+//		{ .txt = "18 Words", .font = GUI_DEFAULT_FONT, .ev_id = BTN_BIP85_18_WORDS },
         { .txt = "24 Words", .font = GUI_DEFAULT_FONT, .ev_id = BTN_BIP85_24_WORDS } };
 
     gui_activity_t* const act = make_menu_activity("BIP85", hdrbtns, 2, menubtns, 2);
@@ -114,7 +121,7 @@ static void make_show_new_mnemonic_page(link_activity_t* page_act, const size_t 
     JADE_ASSERT(word4);
 
     // Support 12-word and 24-word mnemonics only
-    JADE_ASSERT(nwords == 12 || nwords == 24);
+    JADE_ASSERT(nwords == 12 || nwords == 18 || nwords == 24);
     JADE_ASSERT(first_index < nwords);
     JADE_ASSERT(first_index % 4 == 0);
 
@@ -167,7 +174,7 @@ void make_show_mnemonic_activities(
     JADE_ASSERT(words);
 
     // Support 12-word and 24-word mnemonics only
-    JADE_ASSERT(nwords == 12 || nwords == 24);
+    JADE_ASSERT(nwords == 12 || nwords == 18 || nwords == 24);
 
     // Chain the screen activities
     link_activity_t page_act = {};

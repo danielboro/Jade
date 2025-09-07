@@ -20,7 +20,7 @@
 #else
 #define MAX_INPUT_MSG_SIZE (1024 * 401)
 #endif
-
+#define BIP32_ENTROPY_LEN_192 24 /** 192 bits */
 // This should be the size of the largest valid output message.
 // Used by ble and serial when sending messages. (pinserver handshake)
 // NOTE: if CONFIG_RETURN_CAMERA_IMAGES is defined we allocate a larger

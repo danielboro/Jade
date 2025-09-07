@@ -2591,10 +2591,10 @@ void gui_set_activity_title(gui_activity_t* activity, const char* title)
 
 gui_activity_t* gui_current_activity(void) { return current_activity; }
 
-#if defined(CONFIG_BOARD_TYPE_JADE) || defined(CONFIG_BOARD_TYPE_JADE_V1_1) || defined(CONFIG_BOARD_TYPE_JADE_V2)
+//#if defined(CONFIG_BOARD_TYPE_JADE) || defined(CONFIG_BOARD_TYPE_JADE_V1_1) || defined(CONFIG_BOARD_TYPE_JADE_V2)
 extern const uint8_t splashstart[] asm("_binary_splash_bin_gz_start");
 extern const uint8_t splashend[] asm("_binary_splash_bin_gz_end");
-#endif
+//#endif
 
 gui_activity_t* gui_display_splash(void)
 {
@@ -2603,12 +2603,12 @@ gui_activity_t* gui_display_splash(void)
 
     // Blank screen while awaiting attestation data upload
     if (!gui_awaiting_attestation_data()) {
-#if defined(CONFIG_BOARD_TYPE_JADE) || defined(CONFIG_BOARD_TYPE_JADE_V1_1) || defined(CONFIG_BOARD_TYPE_JADE_V2)
+//#if defined(CONFIG_BOARD_TYPE_JADE) || defined(CONFIG_BOARD_TYPE_JADE_V1_1) || defined(CONFIG_BOARD_TYPE_JADE_V2)
         Picture* const pic = get_picture(splashstart, splashend);
         gui_make_picture(&splash_node, pic);
-#else
-        gui_make_text(&splash_node, "Jade DIY", TFT_WHITE);
-#endif
+//#else
+//        gui_make_text(&splash_node, "Jade DIY", TFT_WHITE);
+//#endif
         gui_set_align(splash_node, GUI_ALIGN_CENTER, GUI_ALIGN_MIDDLE);
         gui_set_parent(splash_node, act->root_node);
     }
